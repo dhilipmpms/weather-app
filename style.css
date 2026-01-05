@@ -49,12 +49,21 @@ body {
     margin: 0;
 }
 
-.icon {
-    font-size: 80px;
+.icon img {
+    width: 90px;
+    height: 90px;
 }
 
 .details p {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin: 6px 0;
+}
+
+.small-icon {
+    width: 18px;
+    height: 18px;
 }
 
 .forecast {
@@ -70,4 +79,10 @@ body {
     width: 120px;
     text-align: center;
     font-size: 14px;
+}
+
+.day img {
+    width: 30px;
+    height: 30px;
+    margin: 6px 0;
 }

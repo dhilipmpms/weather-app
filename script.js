@@ -1,107 +1,72 @@
-// Replace 'YOUR_API_KEY_HERE' with your actual OpenWeatherMap API key
-const API_KEY = '';
-
 async function getWeather() {
-    const cityName = document.getElementById("cityInput").value;
+    const cityName = document.getElementById("cityInput").value.trim();
     if (!cityName) {
         alert("Please enter a city name");
         return;
     }
 
     try {
-        // Fetch current weather
-        const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${API_KEY}&units=metric`;
-        const weatherRes = await fetch(weatherUrl);
-        
-        if (!weatherRes.ok) {
-            if (weatherRes.status === 404) {
-                alert("City not found. Please try again.");
-            } else if (weatherRes.status === 401) {
-                alert("Invalid API key. Please check your API key.");
-            } else {
-                alert("Error fetching weather data. Please try again.");
-            }
+        // 1️⃣ Geocoding: City → Latitude & Longitude
+        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1`;
+        const geoRes = await fetch(geoUrl);
+        const geoData = await geoRes.json();
+
+        if (!geoData.results) {
+            alert("City not found. Please try again.");
             return;
         }
-        
-        const weatherData = await weatherRes.json();
 
-        // Fetch 5-day forecast
-        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${API_KEY}&units=metric`;
-        const forecastRes = await fetch(forecastUrl);
-        const forecastData = await forecastRes.json();
+        const { latitude, longitude, name, country } = geoData.results[0];
 
-        // Update current weather
-        document.getElementById("city").innerText = `${weatherData.name}, ${weatherData.sys.country}`;
-        document.getElementById("temperature").innerText = Math.round(weatherData.main.temp) + "°C";
-        document.getElementById("condition").innerText = weatherData.weather[0].description;
-        document.getElementById("humidity").innerText = weatherData.main.humidity + "%";
-        document.getElementById("wind").innerText = Math.round(weatherData.wind.speed * 3.6) + " km/h";
-        document.getElementById("datetime").innerText = new Date().toLocaleString();
+        // 2️⃣ Weather API
+        const weatherUrl =
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+            `&current=temperature_2m,relative_humidity_2m,wind_speed_10m,is_day` +
+            `&daily=temperature_2m_max,temperature_2m_min` +
+            `&timezone=auto`;
 
-        // Update weather icon based on condition
-        const weatherIcon = getWeatherIcon(weatherData.weather[0].main, weatherData.weather[0].id);
-        document.getElementById("icon").innerText = weatherIcon;
+        const weatherRes = await fetch(weatherUrl);
+        const data = await weatherRes.json();
 
-        // Update 5-day forecast
+        // 3️⃣ Update current weather
+        document.getElementById("city").innerText = `${name}, ${country}`;
+        document.getElementById("temperature").innerText =
+            Math.round(data.current.temperature_2m) + "°C";
+        document.getElementById("condition").innerText =
+            data.current.is_day === 1 ? "Day" : "Night";
+        document.getElementById("humidity").innerText =
+            data.current.relative_humidity_2m + "%";
+        document.getElementById("wind").innerText =
+            Math.round(data.current.wind_speed_10m) + " km/h";
+        document.getElementById("datetime").innerText =
+            new Date(data.current.time).toLocaleString();
+
+        // 4️⃣ Day / Night main icon (online SVG)
+        document.getElementById("weatherIcon").src =
+            data.current.is_day === 1
+                ? "https://open-meteo.com/images/weather-icons/clear-day.svg"
+                : "https://open-meteo.com/images/weather-icons/clear-night.svg";
+
+        // 5️⃣ 5-Day Forecast
         const forecastDiv = document.getElementById("forecast");
         forecastDiv.innerHTML = "";
 
-        // Group forecast by day (API returns 3-hour intervals)
-        const dailyForecasts = {};
-        forecastData.list.forEach(item => {
-            const date = new Date(item.dt * 1000).toLocaleDateString();
-            if (!dailyForecasts[date]) {
-                dailyForecasts[date] = {
-                    temps: [],
-                    date: new Date(item.dt * 1000)
-                };
-            }
-            dailyForecasts[date].temps.push(item.main.temp);
-        });
-
-        // Display first 5 days
-        const days = Object.values(dailyForecasts).slice(0, 5);
-        days.forEach(day => {
-            const maxTemp = Math.round(Math.max(...day.temps));
-            const minTemp = Math.round(Math.min(...day.temps));
-            const dayName = day.date.toLocaleDateString("en-US", { weekday: "short" });
+        for (let i = 0; i < 5; i++) {
+            const dayName = new Date(data.daily.time[i])
+                .toLocaleDateString("en-US", { weekday: "short" });
 
             forecastDiv.innerHTML += `
                 <div class="day">
                     <p>${dayName}</p>
-                    <p>⬆ ${maxTemp}°</p>
-                    <p>⬇ ${minTemp}°</p>
+                    <img src="https://open-meteo.com/images/weather-icons/cloudy.svg">
+                    <p>⬆ ${Math.round(data.daily.temperature_2m_max[i])}°</p>
+                    <p>⬇ ${Math.round(data.daily.temperature_2m_min[i])}°</p>
                 </div>
             `;
-        });
+        }
 
     } catch (error) {
-        console.error("Error:", error);
-        alert("An error occurred. Please check your internet connection and try again.");
-    }
-}
-
-function getWeatherIcon(main, id) {
-    // Map weather conditions to emojis
-    switch (main) {
-        case "Clear":
-            return "☀️";
-        case "Clouds":
-            return id === 801 ? "🌤️" : id === 802 ? "⛅" : "☁️";
-        case "Rain":
-            return id >= 500 && id < 510 ? "🌧️" : "🌦️";
-        case "Drizzle":
-            return "🌦️";
-        case "Thunderstorm":
-            return "⛈️";
-        case "Snow":
-            return "🌨️";
-        case "Mist":
-        case "Fog":
-        case "Haze":
-            return "🌫️";
-        default:
-            return "🌡️";
+        console.error(error);
+        alert("Error fetching weather data. Please try again.");
     }
 }

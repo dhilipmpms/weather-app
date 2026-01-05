@@ -1,45 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Weather App</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <div class="weather-card">
-        <div class="top">
-            <div>
-                <h1 id="city">City</h1>
-                <p id="datetime">Date & Time</p>
-            </div>
-
-            <div class="search">
-                <input type="text" id="cityInput" placeholder="Enter city name">
-                <button onclick="getWeather()">Search</button>
-            </div>
+<div class="weather-card">
+    <div class="top">
+        <div>
+            <h1 id="city">Weather</h1>
+            <p id="datetime">--</p>
         </div>
 
-        <div class="main">
-            <div class="temp">
-                <h2 id="temperature">--°C</h2>
-                <p id="condition">---</p>
-            </div>
-
-            <div class="icon" id="icon">☀️</div>
-
-            <div class="details">
-                <p>💧 Humidity: <span id="humidity">--%</span></p>
-                <p>💨 Wind: <span id="wind">-- km/h</span></p>
-            </div>
+        <div class="search">
+            <input type="text" id="cityInput" placeholder="Enter city name">
+            <button onclick="getWeather()">Search</button>
         </div>
-
-        <div class="forecast" id="forecast"></div>
     </div>
 
-    <script src="script.js"></script>
-</body>
+    <div class="main">
+        <div class="temp">
+            <h2 id="temperature">--°C</h2>
+            <p id="condition">---</p>
+        </div>
 
+        <div class="icon">
+            <img id="weatherIcon" src="" alt="weather icon">
+        </div>
+
+        <div class="details">
+            <p>
+                <img class="small-icon"
+                     src="https://cdn.jsdelivr.net/npm/weather-icons@2.0.12/svg/humidity.svg">
+                <span id="humidity">--%</span>
+            </p>
+            <p>
+                <img class="small-icon"
+                     src="https://cdn.jsdelivr.net/npm/weather-icons@2.0.12/svg/strong-wind.svg">
+                <span id="wind">-- km/h</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="forecast" id="forecast"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
 </html>
