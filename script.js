@@ -147,6 +147,6 @@ async function fetchWeatherData(latitude, longitude, locationName = null) {
 
 // Load default city on page load
 window.addEventListener('load', () => {
-    document.getElementById("cityInput").value = "Toronto";
+    document.getElementById("cityInput").value = "chidambaram";
     getWeather();
 });
