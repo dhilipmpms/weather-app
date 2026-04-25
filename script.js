@@ -33,7 +33,7 @@ function getWeatherCondition(code, isDay) {
 
 async function getCurrentLocation() {
     if (!navigator.geolocation) {
-        alert('Geolocation is not supported by your browser');
+        showToast('Geolocation is not supported by your browser');
         return;
     }
 
@@ -43,7 +43,7 @@ async function getCurrentLocation() {
             await fetchWeatherData(latitude, longitude);
         },
         (error) => {
-            alert('Unable to retrieve your location. Please enter a city name.');
+            showToast('Unable to retrieve your location. Please enter a city name.');
         }
     );
 }
@@ -51,7 +51,7 @@ async function getCurrentLocation() {
 async function getWeather() {
     const cityName = document.getElementById("cityInput").value.trim();
     if (!cityName) {
-        alert("Please enter a city name");
+        showToast("Please enter a city name");
         return;
     }
 
@@ -62,7 +62,7 @@ async function getWeather() {
         const geoData = await geoRes.json();
 
         if (!geoData.results) {
-            alert("City not found. Please try again.");
+            showToast("City not found. Please try again.");
             return;
         }
 
@@ -71,7 +71,7 @@ async function getWeather() {
 
     } catch (error) {
         console.error(error);
-        alert("Error fetching weather data. Please try again.");
+        showToast("Error fetching weather data. Please try again.");
     }
 }
 
@@ -141,7 +141,7 @@ async function fetchWeatherData(latitude, longitude, locationName = null) {
 
     } catch (error) {
         console.error(error);
-        alert("Error fetching weather data. Please try again.");
+        showToast("Error fetching weather data. Please try again.");
     }
 }
 
@@ -150,3 +150,13 @@ window.addEventListener('load', () => {
     document.getElementById("cityInput").value = "chidambaram";
     getWeather();
 });
+
+// Toast notification function
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.className = "toast show";
+    setTimeout(function() { 
+        toast.className = toast.className.replace("show", ""); 
+    }, 3000);
+}
